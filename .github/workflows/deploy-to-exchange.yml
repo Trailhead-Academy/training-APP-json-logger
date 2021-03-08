@@ -1,0 +1,27 @@
+name: Publish to Exchange
+
+on: # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+env:
+  AP_UNAME: ${{ secrets.EXCHG_CONTRIB_USERNAME }}
+  AP_PASSW: ${{ secrets.EXCHG_CONTRIB_PASSWORD }}
+  EE_UNAME: ${{ secrets.RELEASES_EE_USERNAME }}
+  EE_PASSW: ${{ secrets.RELEASES_EE_PASSWORD }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout GitHub repo
+        uses: actions/checkout@v2
+      - name: Set up JDK 1.8 and Maven
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: maven-settings-xml-action
+        uses: whelk-io/maven-settings-xml-action@v14
+        with:
+          servers: '[{ "id": "Exchange2", "username":"${env.AP_UNAME}", "password":"${env.AP_PASSW}"}, { "id": "releases-ee", "username":"${env.EE_UNAME}", "password":"${env.EE_PASSW}"}]'     
+      - name: Deploy to Exchange
+        run: ./deploy-to-exchange.sh "$AP_ORG_ID"
+        env:
+          AP_ORG_ID: ${{ secrets.AP_ORG_ID }}
